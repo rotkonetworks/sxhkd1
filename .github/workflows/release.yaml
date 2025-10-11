@@ -1,0 +1,23 @@
+name: Release sxhkd
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libxcb-dev libxcb-keysyms1-dev libxcb-util-dev
+    - name: Build
+      run: make
+    - name: Strip binaries
+      run: strip sxhkd
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: sxhkd
