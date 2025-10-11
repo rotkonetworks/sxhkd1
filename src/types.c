@@ -147,7 +147,7 @@ chord_t *make_chord(xcb_keysym_t keysym, xcb_button_t button, uint16_t modfield,
 					if (ks == keysym) {
 						uint16_t implicit_modfield = (col & 1 ? XCB_MOD_MASK_SHIFT : 0) | (col & 2 ? XCB_MOD_MASK_5 : 0);
 						uint16_t explicit_modfield = modfield | implicit_modfield;
-						chord = malloc(sizeof(chord_t));
+						chord = xmalloc(sizeof(chord_t));
 						bool unique = true;
 						for (chord_t *c = orig; unique && c != NULL; c = c->more)
 							if (c->modfield == explicit_modfield && c->keysym == natural_keysym)
@@ -179,7 +179,7 @@ chord_t *make_chord(xcb_keysym_t keysym, xcb_button_t button, uint16_t modfield,
 		free(keycodes);
 		chord = orig;
 	} else {
-		chord = malloc(sizeof(chord_t));
+		chord = xmalloc(sizeof(chord_t));
 		chord->keysym = keysym;
 		chord->button = button;
 		chord->modfield = modfield;
@@ -204,14 +204,14 @@ void add_chord(chain_t *chain, chord_t *chord)
 
 chain_t *make_chain(void)
 {
-	chain_t *chain = malloc(sizeof(chain_t));
+	chain_t *chain = xmalloc(sizeof(chain_t));
 	chain->head = chain->tail = chain->state = NULL;
 	return chain;
 }
 
 cycle_t *make_cycle(int delay, int period)
 {
-	cycle_t *cycle = malloc(sizeof(cycle_t));
+	cycle_t *cycle = xmalloc(sizeof(cycle_t));
 	cycle->delay = delay;
 	cycle->period = period;
 	return cycle;
@@ -219,7 +219,7 @@ cycle_t *make_cycle(int delay, int period)
 
 hotkey_t *make_hotkey(chain_t *chain, char *command)
 {
-	hotkey_t *hk = malloc(sizeof(hotkey_t));
+	hotkey_t *hk = xmalloc(sizeof(hotkey_t));
 	hk->chain = chain;
 	hk->sync = false;
 	if (command[0] == SYNCHRONOUS_CHAR) {

@@ -97,6 +97,22 @@ char *lgraph(char *s)
 		return NULL;
 }
 
+void* xmalloc(size_t size)
+{
+	void *ptr = malloc(size);
+	if (unlikely(!ptr && size))
+		err("Memory allocation failed.\n");
+	return ptr;
+}
+
+void* xcalloc(size_t nmemb, size_t size)
+{
+	void *ptr = calloc(nmemb, size);
+	if (unlikely(!ptr && nmemb && size))
+		err("Memory allocation failed.\n");
+	return ptr;
+}
+
 char *rgraph(char *s)
 {
 	int i = strlen(s) - 1;

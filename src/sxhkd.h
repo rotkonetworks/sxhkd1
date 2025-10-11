@@ -66,7 +66,8 @@ extern uint16_t num_lock;
 extern uint16_t caps_lock;
 extern uint16_t scroll_lock;
 
-void key_button_event(xcb_generic_event_t *evt, uint8_t event_type);
+__attribute__((hot))
+void key_button_event(xcb_generic_event_t *evt, event_type_t event_type);
 void mapping_notify(xcb_generic_event_t *evt);
 void setup(void);
 void cleanup(void);

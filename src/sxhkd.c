@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <sys/wait.h>
 #include "parse.h"
 #include "grab.h"
 
@@ -203,7 +204,7 @@ int main(int argc, char *argv[])
 			bell = false;
 		}
 
-		if (xcb_connection_has_error(dpy)) {
+		if (unlikely(xcb_connection_has_error(dpy))) {
 			warn("The server closed the connection.\n");
 			running = false;
 		}

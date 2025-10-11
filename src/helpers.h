@@ -28,6 +28,22 @@
 #define LENGTH(x)         (sizeof(x) / sizeof(*x))
 #define MAXLEN            256
 
+#ifdef __GNUC__
+#define likely(x)    __builtin_expect(!!(x), 1)
+#define unlikely(x)  __builtin_expect(!!(x), 0)
+#else
+#define likely(x)    (x)
+#define unlikely(x)  (x)
+#endif
+
+#if __STDC_VERSION__ >= 202311L
+#define NODISCARD [[nodiscard]]
+#define MAYBE_UNUSED [[maybe_unused]]
+#else
+#define NODISCARD __attribute__((warn_unused_result))
+#define MAYBE_UNUSED __attribute__((unused))
+#endif
+
 #ifdef DEBUG
 #  define PUTS(x)         puts(x)
 #  define PRINTF(x,...)   printf(x, __VA_ARGS__)
@@ -39,10 +55,16 @@
 void warn(char *fmt, ...);
 __attribute__((noreturn))
 void err(char *fmt, ...);
+NODISCARD __attribute__((malloc))
+void* xmalloc(size_t size);
+NODISCARD __attribute__((malloc))
+void* xcalloc(size_t nmemb, size_t size);
 void execute(char *cmd[]);
 void spawn(char *cmd[], bool sync);
 void run(char *command, bool sync);
+__attribute__((pure))
 char *lgraph(char *s);
+__attribute__((pure))
 char *rgraph(char *s);
 
 #endif

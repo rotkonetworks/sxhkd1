@@ -2,10 +2,26 @@ OUT      = sxhkd
 VERCMD  ?= git describe --tags 2> /dev/null
 VERSION := $(shell $(VERCMD) || cat VERSION)
 
-CPPFLAGS += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\"
-CFLAGS   += -std=c99 -pedantic -Wall -Wextra
-LDFLAGS  ?=
-LDLIBS    = $(LDFLAGS) -lxcb -lxcb-keysyms -lxcb-xkb
+CC ?= cc
+CLANG_VERSION := $(shell $(CC) --version 2>/dev/null | grep -q "clang" && echo 1 || echo 0)
+GCC_VERSION := $(shell $(CC) --version 2>/dev/null | grep -q "gcc" && echo 1 || echo 0)
+
+CPPFLAGS += -D_POSIX_C_SOURCE=200112L -DVERSION=\"$(VERSION)\" -D_FORTIFY_SOURCE=2
+CFLAGS   += -std=c23 -pedantic -Wall -Wextra -O2 -march=native
+CFLAGS   += -fstack-protector-strong
+
+ifeq ($(CLANG_VERSION),1)
+    CFLAGS += -flto=thin
+    LDFLAGS += -flto=thin
+endif
+
+ifeq ($(GCC_VERSION),1)
+    CFLAGS += -flto -fgraphite-identity
+    LDFLAGS += -flto
+endif
+
+LDFLAGS  += -pie -Wl,-z,relro,-z,now
+LDLIBS    = -lxcb -lxcb-keysyms -lxcb-xkb
 
 PREFIX    ?= /usr/local
 BINPREFIX ?= $(PREFIX)/bin
@@ -17,6 +33,14 @@ all: $(OUT)
 debug: CFLAGS += -O0 -g
 debug: CPPFLAGS += -DDEBUG
 debug: $(OUT)
+
+analyze:
+	@echo "Running clang static analyzer..."
+	$(CC) --analyze -Xanalyzer -analyzer-output=text \
+	      $(CPPFLAGS) $(CFLAGS) src/*.c
+
+sanitize: CFLAGS += -fsanitize=address,undefined -fno-omit-frame-pointer
+sanitize: debug
 
 VPATH = src
 OBJ   =
@@ -46,4 +70,4 @@ doc:
 clean:
 	rm -f $(OBJ) $(OUT)
 
-.PHONY: all debug install uninstall doc clean
+.PHONY: all debug analyze sanitize install uninstall doc clean

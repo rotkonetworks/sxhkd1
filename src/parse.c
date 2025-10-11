@@ -2596,7 +2596,6 @@ chunk_t *extract_chunks(char *s)
 	size_t len = strlen(s);
 	unsigned int i = 0, j = 0;
 	bool inhibit = false;
-	int num_seq = 0;
 	chunk_t *c = make_chunk();
 	chunk_t *head = c;
 	while (i < len) {
@@ -2619,8 +2618,6 @@ chunk_t *extract_chunks(char *s)
 			}
 			c->sequence = true;
 		} else if (s[i] == SEQ_END) {
-			if (c->sequence)
-				num_seq++;
 			if (j > 0) {
 				c->text[j] = '\0';
 				j = 0;
@@ -2640,7 +2637,7 @@ chunk_t *extract_chunks(char *s)
 
 chunk_t *make_chunk(void)
 {
-	chunk_t *c = calloc(1, sizeof(chunk_t));
+	chunk_t *c = xcalloc(1, sizeof(chunk_t));
 	c->sequence = false;
 	c->advance = NULL;
 	c->next = NULL;

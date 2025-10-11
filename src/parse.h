@@ -52,23 +52,23 @@ struct chunk_t {
 };
 
 void load_config(const char *config_file);
-void parse_event(xcb_generic_event_t *evt, uint8_t event_type, xcb_keysym_t *keysym, xcb_button_t *button, uint16_t *modfield);
+void parse_event(xcb_generic_event_t *evt, event_type_t event_type, xcb_keysym_t *keysym, xcb_button_t *button, modfield_t *modfield);
 void process_hotkey(char *hotkey_string, char *command_string);
-char *get_token(char *dst, char *ign, char *src, char *sep);
+NODISCARD char *get_token(char *dst, char *ign, char *src, char *sep);
 void render_next(chunk_t *chunks, char *dest);
-chunk_t *extract_chunks(char *s);
-chunk_t *make_chunk(void);
+NODISCARD chunk_t *extract_chunks(char *s);
+NODISCARD chunk_t *make_chunk(void);
 void destroy_chunks(chunk_t *chunk);
-bool parse_chain(char *string, chain_t *chain);
-bool parse_keysym(char *name, xcb_keysym_t *keysym);
-bool parse_button(char *name, xcb_button_t *butidx);
-bool parse_modifier(char *name, uint16_t *modfield);
-bool parse_fold(char *string, char *folded_string);
-uint8_t key_to_button(uint8_t event_type);
+NODISCARD bool parse_chain(char *string, chain_t *chain);
+NODISCARD bool parse_keysym(char *name, xcb_keysym_t *keysym);
+NODISCARD bool parse_button(char *name, xcb_button_t *butidx);
+NODISCARD bool parse_modifier(char *name, modfield_t *modfield);
+NODISCARD bool parse_fold(char *string, char *folded_string);
+NODISCARD event_type_t key_to_button(event_type_t event_type);
 void get_standard_keysyms(void);
 void get_lock_fields(void);
 int16_t modfield_from_keysym(xcb_keysym_t keysym);
 int16_t modfield_from_keycode(xcb_keycode_t keycode);
-xcb_keycode_t *keycodes_from_keysym(xcb_keysym_t keysym);
+NODISCARD xcb_keycode_t *keycodes_from_keysym(xcb_keysym_t keysym);
 
 #endif
