@@ -4,6 +4,11 @@ on:
     tags:
       - '*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'tag to release'
+        required: true
+        type: string
 jobs:
   build:
     runs-on: ubuntu-latest
