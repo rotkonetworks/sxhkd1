@@ -7,12 +7,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: alpine:latest
     steps:
     - uses: actions/checkout@v4
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libxcb-dev libxcb-keysyms1-dev libxcb-util-dev
+        apk add --no-cache build-base xcb-util-dev xcb-util-keysyms-dev
     - name: Build
       run: make
     - name: Strip binaries
