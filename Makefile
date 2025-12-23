@@ -60,8 +60,8 @@ install:
 	cp -pf $(OUT) "$(DESTDIR)$(BINPREFIX)"
 	mkdir -p "$(DESTDIR)$(MANPREFIX)"/man1
 	cp -p doc/$(OUT).1 "$(DESTDIR)$(MANPREFIX)"/man1
-	mkdir -p "$(DESTDIR)$(DOCPREFIX)"
-	cp -pr examples "$(DESTDIR)$(DOCPREFIX)"/examples
+	mkdir -p "$(DESTDIR)$(DOCPREFIX)"/examples
+	cp -pr examples/* "$(DESTDIR)$(DOCPREFIX)"/examples
 
 install_cfg:
 	mkdir -p "$(CONFPREFIX)"/sxhkd
