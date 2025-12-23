@@ -1,0 +1,204 @@
+#
+# system control
+#
+
+# reload sxhkd config
+super + Escape
+    pkill -10 -x sxhkd
+
+# restart/quit bspwm
+super + alt + {r,q}
+    bspc {wm -r,quit}
+
+# lock screen
+super + shift + x
+    i3lock-fancy-rapid 5 3
+
+#
+# window management
+#
+
+# close/kill window
+super + {_,shift + }q
+    bspc node -{c,k}
+
+# window states
+super + {t,shift + t,f,shift + f}
+    bspc node -t {tiled,pseudo_tiled,fullscreen,floating}
+
+# toggle monocle layout
+super + m
+    bspc desktop -l next
+
+# swap current node with biggest
+super + g
+    bspc node -s biggest.window
+
+#
+# layer controls
+#
+
+# toggle always-on-top (above layer)
+super + a
+    if [ "$(bspc query -N -n focused.above)" ]; then \
+        bspc node -l normal; \
+    else \
+        bspc node -l above; \
+    fi
+
+# picture-in-picture mode (floating + sticky + above + small)
+super + p
+    if [ "$(bspc query -N -n focused.floating.sticky.above)" ]; then \
+        bspc node -t tiled -g sticky=off -l normal; \
+    else \
+        bspc node -t floating -g sticky=on -l above; \
+        xdotool getactivewindow windowsize 640 360 windowmove 1900 40; \
+    fi
+
+# toggle sticky (visible on all desktops)
+super + s
+    bspc node -g sticky
+
+#
+# window snap (tile to edges/corners)
+#
+
+# snap to left/right half
+super + ctrl + {Left,Right}
+    bspc node -t floating && \
+    WIN=$(xdotool getactivewindow) && \
+    MON_W=$(xdotool getdisplaygeometry | cut -d' ' -f1) && \
+    MON_H=$(xdotool getdisplaygeometry | cut -d' ' -f2) && \
+    xdotool windowsize $WIN $((MON_W/2)) $((MON_H-32)) && \
+    xdotool windowmove $WIN {0,$((MON_W/2))} 32
+
+# snap to top/bottom half
+super + ctrl + {Up,Down}
+    bspc node -t floating && \
+    WIN=$(xdotool getactivewindow) && \
+    MON_W=$(xdotool getdisplaygeometry | cut -d' ' -f1) && \
+    MON_H=$(xdotool getdisplaygeometry | cut -d' ' -f2) && \
+    xdotool windowsize $WIN $MON_W $((MON_H/2)) && \
+    xdotool windowmove $WIN 0 {32,$((MON_H/2))}
+
+# snap to corners (quarter screen)
+super + ctrl + {h,l,j,k}
+    bspc node -t floating && \
+    WIN=$(xdotool getactivewindow) && \
+    MON_W=$(xdotool getdisplaygeometry | cut -d' ' -f1) && \
+    MON_H=$(xdotool getdisplaygeometry | cut -d' ' -f2) && \
+    xdotool windowsize $WIN $((MON_W/2)) $((MON_H/2-16)) && \
+    xdotool windowmove $WIN {0 32,$((MON_W/2)) 32,0 $((MON_H/2+16)),$((MON_W/2)) $((MON_H/2+16))}
+
+# center floating window
+super + ctrl + c
+    WIN=$(xdotool getactivewindow) && \
+    eval $(xdotool getwindowgeometry --shell $WIN) && \
+    MON_W=$(xdotool getdisplaygeometry | cut -d' ' -f1) && \
+    MON_H=$(xdotool getdisplaygeometry | cut -d' ' -f2) && \
+    xdotool windowmove $WIN $((MON_W/2-WIDTH/2)) $((MON_H/2-HEIGHT/2))
+
+#
+# focus & movement
+#
+
+# focus/move window in direction
+super + {_,shift + }{h,j,k,l}
+    bspc node -{f,s} {west,south,north,east}
+
+# focus next/previous window
+super + {_,shift + }Tab
+    bspc node -f {next,prev}.local.!hidden.window
+
+# focus/send to desktop
+super + {_,shift + }{1-9,0}
+    bspc {desktop -f,node -d} '^{1-9,10}'
+
+# focus next/previous desktop
+super + bracket{left,right}
+    bspc desktop -f {prev,next}.local
+
+#
+# window resizing
+#
+
+# expand window
+super + alt + {h,j,k,l}
+    bspc node -z {left -20 0,bottom 0 20,top 0 -20,right 20 0}
+
+# contract window
+super + alt + shift + {h,j,k,l}
+    bspc node -z {right -20 0,top 0 20,bottom 0 -20,left 20 0}
+
+# move floating window
+super + {Left,Down,Up,Right}
+    bspc node -v {-20 0,0 20,0 -20,20 0}
+
+#
+# preselection
+#
+
+# preselect direction
+super + ctrl + {h,j,k,l}
+    bspc node -p {west,south,north,east}
+
+# preselect ratio
+super + ctrl + {1-9}
+    bspc node -o 0.{1-9}
+
+# cancel preselection
+super + ctrl + space
+    bspc node -p cancel
+
+#
+# applications
+#
+
+# terminal
+super + Return
+    alacritty
+
+# app launcher
+super + d
+    rofi -show drun
+
+# window switcher
+alt + Tab
+    rofi -show window
+
+# browser
+super + w
+    chromium
+
+# file manager
+super + e
+    pcmanfm
+
+# file manager (tui)
+super + shift + e
+    alacritty -e yazi
+
+#
+# media & system keys
+#
+
+# volume control
+XF86Audio{Raise,Lower}Volume
+    amixer -q set Master 5%{+,-}
+
+XF86AudioMute
+    amixer -q set Master toggle
+
+# brightness control
+XF86MonBrightness{Up,Down}
+    brightnessctl s 5%{+,-}
+
+# screenshot
+Print
+    flameshot gui
+
+shift + Print
+    flameshot full -c
+
+ctrl + Print
+    flameshot full -p ~/Pictures/Screenshots/

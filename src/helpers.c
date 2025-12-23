@@ -28,9 +28,28 @@
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <dirent.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "sxhkd.h"
+
+static void closefrom_fallback(int lowfd)
+{
+	DIR *dirp = opendir("/proc/self/fd");
+	if (dirp == NULL) {
+		for (int fd = lowfd; fd < 1024; fd++)
+			close(fd);
+		return;
+	}
+	struct dirent *dent;
+	int dir_fd = dirfd(dirp);
+	while ((dent = readdir(dirp)) != NULL) {
+		int fd = atoi(dent->d_name);
+		if (fd >= lowfd && fd != dir_fd)
+			close(fd);
+	}
+	closedir(dirp);
+}
 
 void warn(char *fmt, ...)
 {
@@ -58,16 +77,25 @@ void run(char *command, bool sync)
 
 void spawn(char *cmd[], bool sync)
 {
-	if (fork() == 0) {
+	pid_t pid = fork();
+	if (pid == -1) {
+		warn("Fork failed.\n");
+		return;
+	}
+	if (pid == 0) {
 		if (dpy != NULL)
 			close(xcb_get_file_descriptor(dpy));
 		if (sync) {
 			execute(cmd);
 		} else {
-			if (fork() == 0) {
+			pid_t pid2 = fork();
+			if (pid2 == -1) {
+				_exit(EXIT_FAILURE);
+			}
+			if (pid2 == 0) {
 				execute(cmd);
 			}
-			exit(EXIT_SUCCESS);
+			_exit(EXIT_SUCCESS);
 		}
 	}
 	wait(NULL);
@@ -79,8 +107,8 @@ void execute(char *cmd[])
 	if (redir_fd != -1) {
 		dup2(redir_fd, STDOUT_FILENO);
 		dup2(redir_fd, STDERR_FILENO);
-		close(redir_fd);
 	}
+	closefrom_fallback(STDERR_FILENO + 1);
 	execvp(cmd[0], cmd);
 	err("Spawning failed.\n");
 }
@@ -115,11 +143,12 @@ void* xcalloc(size_t nmemb, size_t size)
 
 char *rgraph(char *s)
 {
-	int i = strlen(s) - 1;
-	while (i >= 0 && !isgraph(s[i]))
-		i--;
-	if (i >= 0)
-		return (s + i);
-	else
+	size_t len = strlen(s);
+	if (len == 0)
 		return NULL;
+	for (size_t i = len; i > 0; i--) {
+		if (isgraph(s[i - 1]))
+			return (s + i - 1);
+	}
+	return NULL;
 }

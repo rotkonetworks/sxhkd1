@@ -2374,17 +2374,17 @@ keysym_dict_t nks_dict[] = {/*{{{*/
 #endif
 };/*}}}*/
 
-void load_config(const char *config_file)
+void load_config(const char *cfg_path)
 {
-	PRINTF("load configuration '%s'\n", config_file);
-	FILE *cfg = fopen(config_file, "r");
+	PRINTF("load configuration '%s'\n", cfg_path);
+	FILE *cfg = fopen(cfg_path, "r");
 	if (cfg == NULL)
-		err("Can't open configuration file: '%s'.\n", config_file);
+		err("Can't open configuration file: '%s'.\n", cfg_path);
 
 	char buf[3 * MAXLEN];
 	char chain[MAXLEN] = {0};
 	char command[2 * MAXLEN] = {0};
-	int offset = 0;
+	size_t offset = 0;
 	char first;
 
 	while (fgets(buf, sizeof(buf), cfg) != NULL) {
@@ -2404,7 +2404,7 @@ void load_config(const char *config_file)
 				snprintf(command + offset, sizeof(command) - offset, "%s", start);
 
 			if (*end == PARTIAL_LINE) {
-				offset += end - start;
+				offset += (size_t)(end - start);
 				continue;
 			} else {
 				offset = 0;
@@ -2432,7 +2432,7 @@ void parse_event(xcb_generic_event_t *evt, uint8_t event_type, xcb_keysym_t *key
 	} else if (event_type == XCB_KEY_RELEASE) {
 		xcb_key_release_event_t *e = (xcb_key_release_event_t *) evt;
 		xcb_keycode_t keycode = e->detail;
-		*modfield = e->state & ~modfield_from_keycode(keycode);
+		*modfield = (uint16_t)(e->state & ~modfield_from_keycode(keycode));
 		*keysym = xcb_key_symbols_get_keysym(symbols, keycode, 0);
 		PRINTF("key release %u %u\n", keycode, *modfield);
 	} else if (event_type == XCB_BUTTON_PRESS) {
@@ -2548,7 +2548,7 @@ void render_next(chunk_t *chunks, char *dest)
 {
 	if (chunks == NULL)
 		return;
-	int i = 0;
+	size_t i = 0;
 	bool incr = false;
 	for (chunk_t *c = chunks; c != NULL; c = c->next) {
 		if (c->sequence) {
@@ -2735,16 +2735,16 @@ bool parse_modifier(char *name, uint16_t *modfield)
 		*modfield |= XCB_MOD_MASK_CONTROL;
 		return true;
 	} else if (strcmp(name, "alt") == 0) {
-		*modfield |= (modfield_from_keysym(Alt_L) | modfield_from_keysym(Alt_R));
+		*modfield |= (uint16_t)(modfield_from_keysym(Alt_L) | modfield_from_keysym(Alt_R));
 		return true;
 	} else if (strcmp(name, "super") == 0) {
-		*modfield |= (modfield_from_keysym(Super_L) | modfield_from_keysym(Super_R));
+		*modfield |= (uint16_t)(modfield_from_keysym(Super_L) | modfield_from_keysym(Super_R));
 		return true;
 	} else if (strcmp(name, "hyper") == 0) {
-		*modfield |= (modfield_from_keysym(Hyper_L) | modfield_from_keysym(Hyper_R));
+		*modfield |= (uint16_t)(modfield_from_keysym(Hyper_L) | modfield_from_keysym(Hyper_R));
 		return true;
 	} else if (strcmp(name, "meta") == 0) {
-		*modfield |= (modfield_from_keysym(Meta_L) | modfield_from_keysym(Meta_R));
+		*modfield |= (uint16_t)(modfield_from_keysym(Meta_L) | modfield_from_keysym(Meta_R));
 		return true;
 	} else if (strcmp(name, "mode_switch") == 0) {
 		*modfield |= XCB_MOD_MASK_5;

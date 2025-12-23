@@ -134,12 +134,17 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	signal(SIGINT, hold);
-	signal(SIGHUP, hold);
-	signal(SIGTERM, hold);
-	signal(SIGUSR1, hold);
-	signal(SIGUSR2, hold);
-	signal(SIGALRM, hold);
+	/* Use sigaction instead of signal for reliable behavior */
+	struct sigaction sa;
+	sa.sa_handler = hold;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGHUP, &sa, NULL);
+	sigaction(SIGTERM, &sa, NULL);
+	sigaction(SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR2, &sa, NULL);
+	sigaction(SIGALRM, &sa, NULL);
 
 	setup();
 	get_standard_keysyms();

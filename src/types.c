@@ -270,6 +270,9 @@ void destroy_chain(chain_t *chain)
 
 void destroy_chord(chord_t *chord)
 {
+	if (chord == NULL) {
+		return;
+	}
 	chord_t *c = chord->more;
 	while (c != NULL) {
 		chord_t *n = c->more;
